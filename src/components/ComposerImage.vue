@@ -1,18 +1,19 @@
 <script setup lang="ts">
     import { ref, reactive, onMounted } from 'vue'
     import ComposerTool from './composer-tool.vue'
+    import { ImageOption } from '../models/globals'
 
     const props = defineProps({
         id: Number,
-        options: { type: Array<Object>, required: true },
+        options: { type: Array<ImageOption>, required: true },
         initValue: { type: Object, default: null }
     })
 
     const emit = defineEmits(['doUpdate', 'doDuplicate', 'doDelete'])
 
     let mode = ref('read')
-    let selectedOption = reactive(props.options[0])
-    let value = ref(props.initValue)
+    let selectedOption = reactive<ImageOption>(props.options[0])
+    let value:any = ref(props.initValue)
 
     onMounted(() => {
         selectedOption = props.options[0]

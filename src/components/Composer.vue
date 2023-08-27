@@ -1,7 +1,7 @@
 <script setup lang="ts">
     import { reactive, computed, onMounted, shallowRef, defineAsyncComponent } from 'vue'
     //import { uuid } from 'uuidv4';
-    import { Tool, ContentElement } from '../models/globals'
+    import { Tool, ContentElement, ImageOption } from '../models/globals'
 
     onMounted(() => {
         console.log('The initial')
@@ -10,9 +10,9 @@
     let bodyContentEls = reactive<Array<ContentElement>>([])
 
     let draggedElement = reactive<Tool|ContentElement>(null)
-    let hoveredElement = reactive<{ el: Tool, index: number } | {}>({})
+    let hoveredElement = reactive<{ el: Tool|ContentElement|any, index: number } | {}>({})
 
-    const imagesData = reactive([
+    const imagesData = reactive<Array<ImageOption>>([
         { id: 1, name: 'Image 1', src: 'https://picsum.photos/220/160' }, 
         { id: 2, name: 'Image 2', src: 'https://picsum.photos/280/100' },
         { id: 3, name: 'Image 3', src: 'https://picsum.photos/260/120' },
@@ -64,7 +64,7 @@
         hoveredElement = { el, index } 
     }
 
-    const isOver = (el:Tool|ContentElement) => {
+    const isOver = (el:ContentElement|Tool|any) => {
         if (!el?.id || !hoveredElement.el?.id) return false
         return el.id === hoveredElement.el.id && el.id !== draggedElement.id
     }
@@ -84,49 +84,61 @@
         bodyContentEls.splice(contentElementIndex, 1)
     }
 
+    const submit = () => {
+        const content = JSON.parse(JSON.stringify(bodyContentEls)).map(el => el.value)
+        console.log('Submit', content)
+        alert( JSON.stringify(content) )
+    }
+
 </script>
 
 <template>
     <div class="composer">
-        <div class="composer__content">
+        <div class="composer__container">
+            <div class="composer__content">
+                <transition-group class="composer__content__body" name="flip-list" tag="div">
+                    <component  
+                        v-for="(el, index) in bodyContentEls" 
+                        :key="`tool-${el.id}`" 
+                        :is="el.component" 
+                        :id="el.id"
+                        :class="['composer__tools__item', isOver(el) && 'composer__tools__item--over']"
+                        v-bind="getAttributes(el.name)"
+                        draggable="true"
+                        @dragstart="onDragStart(el)" 
+                        @dragend="onDragEnd(index, 'body')"
+                        @dragover="onDragover(el, index)"
+                        @doUpdate="onUpdated"
+                        @doDuplicate="onDuplicate"
+                        @doDelete="onDelete"
+                    />
+                </transition-group>
 
-            <transition-group class="composer__content__body" name="flip-list" tag="div">
-                <component  
-                    v-for="(el, index) in bodyContentEls" 
-                    :key="`tool-${el.id}`" 
-                    :is="el.component" 
-                    :id="el.id"
-                    :class="['composer__tools__item', isOver(el) && 'composer__tools__item--over']"
-                    v-bind="getAttributes(el.name)"
+            </div>
+            <div class="composer__tools">
+                <div 
+                    class="composer__tools__item" 
+                    v-for="(tool, index) in tools" 
+                    :key="`tool-${index}`" 
                     draggable="true"
-                    @dragstart="onDragStart(el)" 
-                    @dragend="onDragEnd(index, 'body')"
-                    @dragover="onDragover(el, index)"
-                    @doUpdate="onUpdated"
-                    @doDuplicate="onDuplicate"
-                    @doDelete="onDelete"
-                />
-            </transition-group>
-
+                    @dragstart="onDragStart(tool)" 
+                    @dragend="onDragEnd(index, 'toolbar')"
+                >{{ tool.name }}</div>
+            </div>
         </div>
-        <div class="composer__tools">
-            <div 
-                class="composer__tools__item" 
-                v-for="(tool, index) in tools" 
-                :key="`tool-${index}`" 
-                draggable="true"
-                @dragstart="onDragStart(tool)" 
-                @dragend="onDragEnd(index, 'toolbar')"
-            >{{ tool.name }}</div>
+        <div class="composer__actions">
+            <button @click="submit">Save</button>
         </div>
     </div>
 </template>
 
 <style scoped lang="scss">
 .composer {
-    display: flex;
-
     $toolbar-with: 80px;
+
+    &__container {
+        display: flex;
+    }
 
     &__content{
         background-color: #F7F7F7;
@@ -175,6 +187,14 @@
             padding: 8px 2px;
             box-shadow: 2px 0px 12px -5px #ccc;
         }
+    }
+
+    &__actions {
+        text-align: right;
+        background-color: #f7f7f7;
+        padding: 4px;
+        border-radius: 6px;
+        margin-top: 7px;
     }
 }
 </style>

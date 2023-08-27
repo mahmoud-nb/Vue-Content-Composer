@@ -4,13 +4,13 @@
 
     const props = defineProps({
         id: Number,
-        initValue: String
+        initValue: { type: String, default: 'Your content here...' }
     })
 
     const emit = defineEmits(['doUpdate', 'doDuplicate', 'doDelete'])
 
     let mode = ref('read')
-    let value = ref(props.initValue || 'Your Text here')
+    let value = ref(props.initValue)
 
     onMounted(() => {
         console.log('composer-text', props)

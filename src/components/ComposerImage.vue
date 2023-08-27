@@ -17,13 +17,12 @@
 
     onMounted(() => {
         selectedOption = props.options[0]
-        console.log('Image:onMounted', mode.value, props.options, selectedOption)
+        emit('doUpdate', selectedOption, props.id)
     })
 
     const onChange = () => {
         mode.value = 'read'
         selectedOption = props.options.find( el => el.id === value.value)
-        console.log('onChange', props.id, value)
         emit('doUpdate', selectedOption, props.id)
     }
 
@@ -64,6 +63,13 @@
     &__display {
         display: block;
         text-align: center;
+    }
+
+    select {
+        padding: 6px;
+        width: -webkit-fill-available;
+        border: 0.1rem solid #ccc;
+        border-radius: 4px;
     }
 }
 </style>

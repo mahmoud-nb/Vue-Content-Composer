@@ -13,7 +13,7 @@
     let value = ref(props.initValue)
 
     onMounted(() => {
-        console.log('composer-text', props)
+        emit('doUpdate', value.value, props.id)
     })
 
     const onInputBlur = () => {
@@ -43,6 +43,7 @@
         <template v-else>
             {{ value }}
         </template>
+        <slot />
     </composer-tool>
 </template>
 

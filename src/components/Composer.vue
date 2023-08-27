@@ -1,16 +1,12 @@
 <script setup lang="ts">
-    import { reactive, computed, onMounted, shallowRef, defineAsyncComponent } from 'vue'
-    //import { uuid } from 'uuidv4';
+    import { reactive, computed, shallowRef, defineAsyncComponent } from 'vue'
+    import { v4 as uuidv4 } from "uuid"
     import { Tool, ContentElement, ImageOption } from '../models/globals'
-
-    onMounted(() => {
-        console.log('The initial')
-    })
 
     let bodyContentEls = reactive<Array<ContentElement>>([])
 
-    let draggedElement = reactive<Tool|ContentElement>(null)
-    let hoveredElement = reactive<{ el: Tool|ContentElement|any, index: number } | {}>({})
+    let draggedElement = reactive<ContentElement|Tool>(null)
+    let hoveredElement = reactive<{ el: ContentElement|Tool|any, index: number } >(null)
 
     const imagesData = reactive<Array<ImageOption>>([
         { id: 1, name: 'Image 1', src: 'https://picsum.photos/220/160' }, 
@@ -19,20 +15,18 @@
         { id: 4, name: 'Image 4', src: 'https://picsum.photos/220/100' }
     ])
 
-    const getAttributes = (name: string) => {
-        if (!name) return {}
+    const tools = computed (() => [{ name: 'Text' },{ name: 'Image' }])
+
+    const hoveredElementId = computed (() => hoveredElement?.el?.id)
+
+    const getAttributes = (el:Tool|ContentElement) => {
+        if (!el.name) return {}
 
         return {
-            ...( name === 'Text' && {} ),
-            ...( name === 'Image' && { options: imagesData } ),
+            ...( el.name === 'Text' && { id: el.id, initValue: 'Your content here...' } ),
+            ...( el.name === 'Image' && { id: el.id, options: imagesData } ),
         }
     }
-
-    const tools = computed (() => [
-        { name: 'Text' },
-        { name: 'Image' },
-    ])
-
 
     const onDragStart = (el:Tool|ContentElement) => {  
         draggedElement = el
@@ -43,7 +37,7 @@
 
         if (source === 'toolbar') {
             const contentElement: ContentElement = {
-                id: Date.now(), // TODO : use uuid() for unique id
+                id: uuidv4(),
                 name: draggedElement.name,
                 component: loadComponent(draggedElement.name),
                 value: ''
@@ -56,36 +50,30 @@
             bodyContentEls.splice(hoveredElement.index, 0, contentElement)
         }
         draggedElement = null
-        hoveredElement = {}
-        
+        hoveredElement = null
     }
 
     const onDragover = (el:Tool|ContentElement, index:number) => {
         hoveredElement = { el, index } 
     }
 
-    const isOver = (el:ContentElement|Tool|any) => {
-        if (!el?.id || !hoveredElement.el?.id) return false
-        return el.id === hoveredElement.el.id && el.id !== draggedElement.id
-    }
-
-    const onUpdated = (val:any, id:number) => {
+    const onUpdated = (val:any, id:string) => {
         bodyContentEls.find(el => el.id === id).value = val 
     }
 
-    const onDuplicate = (id:number) => {
+    const onDuplicate = (id:string) => {
         const contentElementIndex: number = bodyContentEls.findIndex(el => el.id === id)
         const contentElement: ContentElement = bodyContentEls[contentElementIndex]
         bodyContentEls.splice(contentElementIndex, 0, contentElement)
     }
 
-    const onDelete = (id:number) => {
+    const onDelete = (id:string) => {
         const contentElementIndex: number = bodyContentEls.findIndex(el => el.id === id)
         bodyContentEls.splice(contentElementIndex, 1)
     }
 
     const submit = () => {
-        const content = JSON.parse(JSON.stringify(bodyContentEls)).map(el => el.value)
+        const content = JSON.parse(JSON.stringify(bodyContentEls)).map((el:any) => el.value)
         console.log('Submit', content)
         alert( JSON.stringify(content) )
     }
@@ -101,9 +89,8 @@
                         v-for="(el, index) in bodyContentEls" 
                         :key="`tool-${el.id}`" 
                         :is="el.component" 
-                        :id="el.id"
-                        :class="['composer__tools__item', isOver(el) && 'composer__tools__item--over']"
-                        v-bind="getAttributes(el.name)"
+                        :class="['composer__tools__item', el.id === hoveredElementId && 'composer__tools__item--over']"
+                        v-bind="getAttributes(el)"
                         draggable="true"
                         @dragstart="onDragStart(el)" 
                         @dragend="onDragEnd(index, 'body')"
@@ -138,18 +125,18 @@
 
     &__container {
         display: flex;
+        width: 400px;
     }
 
-    &__content{
+    &__content {
         background-color: #F7F7F7;
         flex:1 0 auto;
         padding: 6px;
     }
 
-    &__content__body{
+    &__content__body {
         text-align: left;
         border-radius: 8px;
-        width: 400px;
         min-height: 400px;
 
         display: flex;
@@ -195,6 +182,10 @@
         padding: 4px;
         border-radius: 6px;
         margin-top: 7px;
+    }
+
+    .flip-list-move {
+        transition: transform .2s;
     }
 }
 </style>

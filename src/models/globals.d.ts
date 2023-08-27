@@ -1,10 +1,11 @@
-export type Tool = {
+export interface Tool {
+    id?: string;
     name: string;
-    component?: string;
+    icon?: string;
 }
 
-export type ContentElement = {
-    id: number,
+export interface ContentElement {
+    id: string;
     name: string;
     component?: object;
     value?: string;

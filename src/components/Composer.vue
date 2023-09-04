@@ -63,7 +63,10 @@
 
     const onDuplicate = (id:string) => {
         const contentElementIndex: number = bodyContentEls.findIndex(el => el.id === id)
-        const contentElement: ContentElement = bodyContentEls[contentElementIndex]
+        const contentElement: ContentElement = {
+            ...bodyContentEls[contentElementIndex],
+            id: uuidv4(),
+        }
         bodyContentEls.splice(contentElementIndex, 0, contentElement)
     }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { ref, reactive, onMounted } from 'vue'
-    import ComposerTool from './composer-tool.vue'
+    import ComposerTool from './ComposerTool.vue'
     import { ImageOption } from '../models/globals'
 
     const props = defineProps({

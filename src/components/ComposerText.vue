@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { ref, onMounted } from 'vue'
-    import ComposerTool from './composer-tool.vue'
+    import ComposerTool from './ComposerTool.vue'
 
     const props = defineProps({
         id: Number,

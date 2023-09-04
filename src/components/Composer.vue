@@ -103,7 +103,6 @@
                         @doDelete="onDelete"
                     />
                 </transition-group>
-
             </div>
             <div class="composer__tools">
                 <div 

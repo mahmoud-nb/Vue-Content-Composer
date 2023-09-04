@@ -3,7 +3,7 @@
     import ComposerTool from './ComposerTool.vue'
 
     const props = defineProps({
-        id: Number,
+        id: String,
         initValue: { type: String, default: 'Your content here...' }
     })
 
